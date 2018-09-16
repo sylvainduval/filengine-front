@@ -18,11 +18,12 @@ import Grid from '@material-ui/core/Grid';
 //icons
 import Home from '@material-ui/icons/Home';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import Comment from '@material-ui/icons/Comment';
 import Menu from '@material-ui/icons/Menu';
+import SettingsSharp from '@material-ui/icons/SettingsSharp';
 //-----
 
 import AuthDisconnect from '../components/AuthDisconnect';
+import session from '../utils/session';
 
 import {Link} from "react-router-dom";
 //import { mailFolderListItems, otherMailFolderListItems } from './tileData';
@@ -47,35 +48,35 @@ const LefterListItem = (props, context) => {
 }
 
 class Lefter extends React.Component {
-  state = {
-    left: false,
-  };
+	state = {
+		left: false,
+	};
+	
+	toggleDrawer = (side, open) => () => {
+		this.setState({
+			[side]: open,
+		});
+	};
 
-  toggleDrawer = (side, open) => () => {
-    this.setState({
-      [side]: open,
-    });
-  };
+render() {
+	const { classes } = this.props;
 
-  render() {
-    const { classes } = this.props;
+	const sideList = (
+		<div className={classes.list}>
 
-    const sideList = (
-      <div className={classes.list}>
-
-        <List  component="nav">
-          <LefterListItem icon={<Home />} href="/" label="Home" />
-          <LefterListItem icon={<AccountCircle />} href="/preferences" label="My account" />
-          <LefterListItem icon={<Comment />} href="/topics" label="Topics" />
-        </List>
-
-        <Divider />
-
-        <List>
-          <AuthDisconnect refresher={this.props.refresher} />
-        </List>
-      </div>
-    );
+			<List component="nav">
+				<LefterListItem icon={<Home />} href="/" label="Home" />
+				<LefterListItem icon={<AccountCircle />} href="/preferences" label="My account" />
+				{session.getParam('isAdmin') === true ? <LefterListItem icon={<SettingsSharp />} href="/admin" label="Administration" /> : null}
+			</List>
+	
+			<Divider />
+	
+			<List>
+				<AuthDisconnect refresher={this.props.refresher} />
+			</List>
+		</div>
+	);
 
     return (
       <div  className="border-bottom">

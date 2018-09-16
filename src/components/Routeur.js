@@ -4,7 +4,7 @@ import { BrowserRouter, Route} from "react-router-dom";
 
 import Preferences from '../views/Preferences';
 import Home from '../views/Home';
-import Topics from '../views/Topics';
+import Admin from '../views/Admin';
 
 
 class Routeur extends React.Component {
@@ -24,7 +24,7 @@ class Routeur extends React.Component {
 					<Route exact path="/" component={Home} />
 					<Route exact path="/home" component={Home} />
 					<Route path="/preferences" component={Preferences} />
-					<Route path="/topics" component={Topics} />
+					<Route path="/admin" component={Admin} />
 				</div>
 			</BrowserRouter>
 		)

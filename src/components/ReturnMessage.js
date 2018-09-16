@@ -132,8 +132,8 @@ class ReturnMessage extends React.Component {
       
 	    	<Snackbar
 	        	anchorOrigin={{
-		            vertical: 'top',
-		            horizontal: 'left',
+		            vertical: 'bottom',
+		            horizontal: 'right',
 	        	}}
 				open={this.state.open}
 				autoHideDuration={6000}
