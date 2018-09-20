@@ -44,7 +44,12 @@ const api = {
 			  	let msg = null;
 			    // handle error
 			    if (error.response.data.error) {
-			    	msg = error.response.data.error;
+				    let e = error.response.data.error;
+				    
+				    if (e !== undefined && e !== null && e.constructor === Object)
+						msg = JSON.stringify(error.response.data.error);
+					else
+						msg = e;
 			    }
 
 

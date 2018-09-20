@@ -82,7 +82,7 @@ function TabList(props) {
 			centered
 		>
 			{els.map((el) =>
-				<Tab label={el.label} component={Link} to={`${match.url}/`+el.view} style={{ textDecoration: 'none' }} />
+				<Tab key={el.label} label={el.label} component={Link} to={`${match.url}/`+el.view} style={{ textDecoration: 'none' }} />
 			)}
 		</Tabs>
 	)
