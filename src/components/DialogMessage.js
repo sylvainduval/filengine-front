@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -9,13 +8,34 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 
 class DialogMessage extends React.Component {
+	
+	state = {
+		open: false,
+	};
+	
+	handleClose = () => {
+	    	this.setState({ open: false });
+	    	this.props.onClose();
+	  };
+	
 
   handleClose = (action) => {
+	  this.setState({ open: false });
+	  this.props.onClose();
+	  
 	if (typeof(action) === 'function')
 		action.call(this);
 	  
-    ReactDOM.unmountComponentAtNode(document.getElementById('dialogMessage'));
   };
+  
+  componentWillReceiveProps(nextProps) {
+	  // Typical usage (don't forget to compare props):
+	  if (this.props.open !== nextProps.open) {
+			this.setState({
+				open: nextProps.open
+			})
+	  }
+	}
   
 
   render() {
@@ -24,14 +44,14 @@ class DialogMessage extends React.Component {
     return (
       <div>
         <Dialog
-          open={true}
+          open={this.state.open}
           onClose={this.handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
+          aria-labelledby={title}
+          aria-describedby={description}
         >
-          <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
+            <DialogContentText>
               {description}
             </DialogContentText>
           </DialogContent>

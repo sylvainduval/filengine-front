@@ -66,11 +66,11 @@ let EnhancedTableToolbar = props => {
 			<div className={classes.spacer} />
 			<div className={classes.actions}>
 				{actionsToolTips.map(a => (
-					a.textField ? (
-						<span key={a.title}>{a.icon}</span>
+					a.field ? (
+						<span className="ml-3" key={a.title}>{a.icon}</span>
 					) : (
 						<Tooltip key={a.title} title={a.title}>
-							<IconButton aria-label={a.label} onClick={a.onClick}>
+							<IconButton className="ml-3" aria-label={a.label} onClick={a.onClick} color={a.color ? a.color : 'default'}>
 								{a.icon}
 							</IconButton>
 						</Tooltip>

@@ -129,12 +129,11 @@ class Preferences extends React.Component {
 			data.password = this.state.user.password;
 		
 		api.request(
-			{},
 			{
 				method: 'put',
 				url: '/user/'+this.state.user._id,
 				data: data
-			}, function(props, data, status) { //success
+			}, function(data, status) { //success
 				ReactDOM.render(
 					<ReturnMessage variant="success" message="Account Saved" />,
 					document.getElementById('returnMessage')
@@ -146,16 +145,15 @@ class Preferences extends React.Component {
 
 	componentDidMount() {
 		const userID = session.getParam('_id');
+		const handlerState = this.handlerState;
+		
 		api.request(
-			{
-				handlerState: this.handlerState
-			},
 			{
 				method: 'get',
 				url: '/user/'+userID,
 				data: {}
-			}, function(props, data, status) { //success
-				props.handlerState('user', data.data);
+			}, function(data, status) { //success
+				handlerState('user', data.data);
 			}
 		)
 	  }

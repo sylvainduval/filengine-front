@@ -75,8 +75,9 @@ class LoginForm extends React.Component {
 
 	    event.preventDefault();
 	    
+	    const handler = this.props.handler;
+	    
 	    api.request(
-	    	this.props,
 			{
               method: 'post',
               url: '/login',
@@ -84,9 +85,9 @@ class LoginForm extends React.Component {
 			      login: this.state.login,
 			      password: this.state.password
 			    }
-            }, function(props, data, status) { //success
+            }, function(data, status) { //success
 
-	            props.handler({session: data.data});
+	            handler({session: data.data});
 	            
             })
 	}

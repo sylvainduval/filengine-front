@@ -17,7 +17,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded
 const api = {
 	
 	
-	request: function(props, params, callbackSuccess, callbackError) {
+	request: function(params, callbackSuccess, callbackError) {
 		
 		//const session = JSON.parse(localStorage.getItem('session'));
 		
@@ -36,7 +36,7 @@ const api = {
 			    // handle success
 			    if (typeof(callbackSuccess) === 'function') {
 				    
-			        callbackSuccess.call(this, props, response.data, response.status);
+			        callbackSuccess.call(this, response.data, response.status);
 		        }
 			  })
 			  .catch(error => {
@@ -68,7 +68,7 @@ const api = {
 				
 			    	
 			    if (typeof(callbackError) === 'function') {
-			        callbackError.call(this, props, error.response.data, error.response.status);
+			        callbackError.call(this, error.response.data, error.response.status);
 		        }	
 			    	
 			});

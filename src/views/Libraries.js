@@ -59,16 +59,15 @@ class Libraries extends React.Component {
 	}
 	
 	componentDidMount() {
+		const updateList = this.updateList;
+		
 		api.request(
-	    	{
-		    	updateList: this.updateList
-	    	},
 			{
               method: 'get',
               url: '/libraries',
               data: {}
-            }, function(props, data, status) { //success
-	            props.updateList(data.data);
+            }, function(data, status) { //success
+	            updateList(data.data);
             })
 
 	  }

@@ -1,5 +1,4 @@
 import React from "react";
-import ReactDOM from 'react-dom';
 
 //import classNames from 'classnames';
 import PropTypes from 'prop-types';
@@ -27,6 +26,9 @@ import EnhancedTableHead from '../components/EnhancedTableHead';
 import EnhancedTableToolbar from '../components/EnhancedTableToolbar';
 
 import DialogMessage from '../components/DialogMessage';
+import SelectLibrary from '../components/SelectLibrary';
+
+import AdminUser from './AdminUser';
 
 import api from "../utils/api";
 
@@ -59,7 +61,7 @@ function getSorting(order, orderBy) {
 const styles = theme => ({
 	root: {
 		width: '100%',
-		marginTop: theme.spacing.unit * 3,
+		//marginTop: theme.spacing.unit * 3,
 		backgroundColor: "transparent",
 		boxShadow: 'none'
 	},
@@ -79,11 +81,18 @@ class AdminUsers extends React.Component {
 		orderBy: 'login',
 		selected: [],
 		data: [],
+		//Controle de la vue
 		page: 0,
 		rowsPerPage: 5,
 		total: 0,
 		searchExpr: '',
-		searchPending: false
+		searchPending: false,
+		searchLibrary: '',
+		//Modale d'Edition d'un utilisateur
+		showDialogEditUser: false,
+		currentUserEdit: null,
+		//Modale de suppression d'un utilisateur
+		showDialogDeleteUsers: false,
 	};
 
 	handleRequestSort = (event, property) => {
@@ -145,6 +154,10 @@ class AdminUsers extends React.Component {
 		)
 	};
 	
+	handleLibrary = lib => {		
+		this.setState({ searchLibrary: lib }, this.getList);
+	}
+	
 	isSelected = id => this.state.selected.indexOf(id) !== -1;
 
 	refreshList = (total, data) => {
@@ -162,69 +175,76 @@ class AdminUsers extends React.Component {
 			selected: []
 		});
 
-
-		const { page, rowsPerPage, searchExpr } = this.state;
+		const { page, rowsPerPage, searchExpr, searchLibrary } = this.state;
+		
+		const refreshList = this.refreshList;
 
 		api.request(
-			{
-				refreshList: this.refreshList
-			},
 			{
 				method: 'get',
 				url: '/users',
 				params: {
 					search: searchExpr,
+					library: searchLibrary,
 					offset: rowsPerPage * page,
 					limit : rowsPerPage,
 				}
-			}, function(props, data, status) { //success
-				props.refreshList(data.total, data.data);
+			}, function(data, status) { //success
+				refreshList(data.total, data.data);
 			}
 		)
 	}
 	
 	deleteUsers = () => {
-		const arr = this.state.selected;
+		
+		this.setState({
+	      showDialogDeleteUsers: true
+	    });
+
+	}
+	
+	deleteUsersDelete = () => {
+		let selected = this.state.selected;
 		
 		let done = 0;
 		
 		const evalResponse = () => {
 			done++;
 			
-			if (done === arr.length) {
+			if (done === selected.length) {
 				this.getList();
 			}
 		}
-		
-		ReactDOM.render(
-			<DialogMessage 
-				title="Are you sure?" 
-				description={"These "+arr.length+" account(s) will be deleted forever."}
-				actions={[
-					{label: "Cancel", autoFocus: true},
-					{label: "Delete", onClick: function() {
 
-						for (let i in arr) {
-							api.request(
-								{
-								},
-								{
-									method: 'delete',
-									url: '/user/'+arr[i]
-								}, 
-								evalResponse, //success
-								evalResponse //error
-							)
-						}
-					}
-					}
-				]}
-				 />,
-				document.getElementById('dialogMessage')
-			);
+		for (let i in selected) {
+			api.request(
+				{
+					method: 'delete',
+					url: '/user/'+selected[i]
+				}, 
+				evalResponse, //success
+				evalResponse //error
+			)
+		}
+
+	}
+
+	
+	editUser = (userID) => {
+		userID = typeof(userID) === 'object' ? null : userID;
 		
+		this.setState({
+	      showDialogEditUser: true,
+	      currentUserEdit: userID
+	    });
 	} 
 	
+	closeModal = () => {
+	    this.setState({
+	      showDialogEditUser: false,
+	      showDialogDeleteUsers: false
+	    });
+	  }
 	
 		
 	componentDidMount() {
@@ -233,7 +253,7 @@ class AdminUsers extends React.Component {
 	
 	render() {
 		const { classes } = this.props;
-		const { data, order, orderBy, selected, rowsPerPage, page, total, searchExpr } = this.state;
+		const { data, order, orderBy, selected, rowsPerPage, page, total, searchExpr, showDialogEditUser, currentUserEdit, showDialogDeleteUsers } = this.state;
 		const emptyRows = rowsPerPage - Math.min(rowsPerPage, total - page * rowsPerPage);
 	
 		const rows = [
@@ -255,101 +275,131 @@ class AdminUsers extends React.Component {
 			{
 				title: "searchExpr",
 				label: "Search",
-				textField: true,
+				field: true,
 				icon: <TextField
-		          id="standard-name"
-		          label="Search"
-		          className={classes.searchField}
-		          value={searchExpr}
-		          onChange={this.handleSearch}
-		          margin="normal"
-		        />
+					label="Search"
+					className={classes.searchField + ' mt-0'}
+					value={searchExpr}
+					onChange={this.handleSearch}
+					margin="normal"
+				/>
+			},
+			{
+				title: "selectLibrary",
+				label: "Library",
+				field: true,
+				icon: <SelectLibrary onChange={this.handleLibrary} />
 			},
 			{
 				title: "Add user",
 				label: "Add user",
+				onClick: this.editUser,
+				color: "primary",
 				icon: <Add />
 			}
 		]
 
 
 		return (
-			<Paper className={classes.root+" mt-0"}>
-				<EnhancedTableToolbar 
-					numSelected={selected.length} 
-					actions={toolBarActions}
+			<div>
+				<Paper className={classes.root+" mt-0"}>
+					<EnhancedTableToolbar 
+						numSelected={selected.length} 
+						actions={toolBarActions}
+					/>
+					<div className={classes.tableWrapper}>
+						<Table className={classes.table} aria-labelledby="Users">
+							<EnhancedTableHead
+							numSelected={selected.length}
+							order={order}
+							orderBy={orderBy}
+							onSelectAllClick={this.handleSelectAllClick}
+							onRequestSort={this.handleRequestSort}
+							rowCount={data.length}
+							rows={rows}
+							/>
+							<TableBody>
+								{stableSort(data, getSorting(order, orderBy))
+								.map(n => {
+									const isSelected = this.isSelected(n._id);
+								
+									return (
+										<TableRow
+										hover
+										onClick={event => this.handleClick(event, n._id)}
+										role="checkbox"
+										aria-checked={isSelected}
+										tabIndex={-1}
+										key={n._id}
+										selected={isSelected}
+										>
+											<TableCell padding="checkbox">
+												<Checkbox checked={isSelected} />
+											</TableCell>
+											<TableCell component="th" scope="row" padding="none">
+												{n.login}
+											</TableCell>
+											<TableCell>{n.email}</TableCell>
+											<TableCell>{n.isAdmin ? <Done /> : null}</TableCell>
+											<TableCell>{n.isContributor ? <Done /> : null}</TableCell>
+											<TableCell numeric>
+												<Tooltip title="Edit">
+													<IconButton 
+														aria-label="Edit" 
+														onClick={event => {this.editUser(n._id);event.stopPropagation();}}
+													>
+														<Create />
+													</IconButton>
+												</Tooltip>
+											</TableCell>
+										</TableRow>
+									);
+								})}
+								{emptyRows > 0 && (
+								<TableRow style={{ height: 49 * emptyRows }}>
+								<TableCell colSpan={6} />
+								</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</div>
+					<TablePagination
+						component="div"
+						count={total}
+						rowsPerPage={rowsPerPage}
+						page={page}
+						backIconButtonProps={{
+							'aria-label': 'Previous Page',
+						}}
+						nextIconButtonProps={{
+							'aria-label': 'Next Page',
+						}}
+						onChangePage={this.handleChangePage}
+						onChangeRowsPerPage={this.handleChangeRowsPerPage}
+					/>
+					
+				</Paper>
+				
+				
+				<AdminUser 
+					open={showDialogEditUser} 
+					userID={currentUserEdit} 
+					onClose={this.closeModal} 
 				/>
-				<div className={classes.tableWrapper}>
-					<Table className={classes.table} aria-labelledby="Users">
-						<EnhancedTableHead
-						numSelected={selected.length}
-						order={order}
-						orderBy={orderBy}
-						onSelectAllClick={this.handleSelectAllClick}
-						onRequestSort={this.handleRequestSort}
-						rowCount={data.length}
-						rows={rows}
-						/>
-						<TableBody>
-							{stableSort(data, getSorting(order, orderBy))
-							.map(n => {
-								const isSelected = this.isSelected(n._id);
-							
-								return (
-									<TableRow
-									hover
-									onClick={event => this.handleClick(event, n._id)}
-									role="checkbox"
-									aria-checked={isSelected}
-									tabIndex={-1}
-									key={n._id}
-									selected={isSelected}
-									>
-										<TableCell padding="checkbox">
-											<Checkbox checked={isSelected} />
-										</TableCell>
-										<TableCell component="th" scope="row" padding="none">
-											{n.login}
-										</TableCell>
-										<TableCell>{n.email}</TableCell>
-										<TableCell>{n.isAdmin ? <Done /> : null}</TableCell>
-										<TableCell>{n.isContributor ? <Done /> : null}</TableCell>
-										<TableCell numeric>
-											<Tooltip title="Edit">
-												<IconButton 
-													aria-label="Edit" 
-													onClick={event => {console.log('edit '+n._id);event.stopPropagation();}}
-												>
-													<Create />
-												</IconButton>
-											</Tooltip>
-										</TableCell>
-									</TableRow>
-								);
-							})}
-							{emptyRows > 0 && (
-							<TableRow style={{ height: 49 * emptyRows }}>
-							<TableCell colSpan={6} />
-							</TableRow>
-							)}
-						</TableBody>
-					</Table>
-				</div>
-				<TablePagination
-					component="div"
-					count={total}
-					rowsPerPage={rowsPerPage}
-					page={page}
-					backIconButtonProps={{
-						'aria-label': 'Previous Page',
-					}}
-					nextIconButtonProps={{
-						'aria-label': 'Next Page',
-					}}
-					onChangePage={this.handleChangePage}
-					onChangeRowsPerPage={this.handleChangeRowsPerPage}
+				
+				<DialogMessage 
+					open={showDialogDeleteUsers}
+					onClose={this.closeModal}
+					title="Are you sure?" 
+					description={"These "+selected.length+" account(s) will be deleted forever."}
+					actions={[
+						{label: "Cancel", autoFocus: true},
+						{label: "Delete", onClick: this.deleteUsersDelete}
+					]}
 				/>
-			</Paper>
+			
+			</div>
+			
 		);
 	}
 }
