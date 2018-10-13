@@ -13,6 +13,8 @@ import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import Grid from '@material-ui/core/Grid';
 
 import AutocompleteSelectLibrary from '../components/AutocompleteSelectLibrary';
@@ -79,30 +81,34 @@ class AdminUser extends React.Component {
 					method: 'get',
 					url: '/user/'+nextProps.userID
 				}, function(data, status) { //success
+					
+					data.data.level = data.data.isAdmin ? 'isAdmin' : data.data.isConstributor ? 'isContributor' : 'isVisitor';
 					updateList(data.data);
 				}
 			);
 		}
 	}
 	
-	handleChange(event) {
+	handleChange = event => {
 
 		const target = event.target;
 		const { data, msg } = this.state;
 		
-	    let value = target.type === 'checkbox' ? target.checked : target.value;
-	    //value = target.type === 'text' || target.tagName === 'TEXTAREA' ? value.toUpperCase() : value;
-	    data[target.id] = value;
-	    
-	    msg[target.id] = null;
-	    msg[target.id] = target.type === 'email' && value.indexOf('@') === -1 ? "Wrong email" : msg[target.id];
-	    msg[target.id] = target.type === 'text' && target.required && !value.length ? "Required" : msg[target.id];
+		let value = target.type === 'checkbox' ? target.checked : target.value;
+		//value = target.type === 'text' || target.tagName === 'TEXTAREA' ? value.toUpperCase() : value;
 
-	    // update state
-	    this.setState({
-	        data,
-	        msg
-	    });
+		data[target.name] = value;
+
+		msg[target.name] = null;
+		msg[target.name] = target.type === 'email' && value.indexOf('@') === -1 ? "Wrong email" : msg[target.name];
+		msg[target.name] = target.type === 'text' && target.required && !value.length ? "Required" : msg[target.name];
+
+
+		// update state
+		this.setState({
+			data,
+			msg
+		});
 	}
 	
 	handleSubmit(event) {
@@ -118,8 +124,6 @@ class AdminUser extends React.Component {
 	render() {
 		const { classes, userID } = this.props;
 		const { data, msg } = this.state;
-		
-		//console.log(data);
 
 		return (
 			
@@ -130,45 +134,78 @@ class AdminUser extends React.Component {
 				onClose={this.handleClose}
 			>
 				<DialogTitle id="scroll-dialog-title">{userID ? "Edit user" : "Add user"}</DialogTitle>
-
-				<form onSubmit={this.handleSubmit}>
-					<DialogContent>
+				
+				<DialogContent>
+					<form onSubmit={this.handleSubmit} id="userForm">
 						<Grid container direction="column" alignItems="center">
 							<Grid container item xs={12}>
 								<FormControl fullWidth className={classes.formControl} error={!!msg.login}>
 									<InputLabel htmlFor="login">Login</InputLabel>
-									<Input id="login" value={data.login ? data.login : ''} onChange={this.handleChange} />
+									<Input 
+										value={data.login ? data.login : ''} 
+										onChange={this.handleChange} 
+										inputProps={{
+											name: 'login'
+										}}
+									/>
 									<FormHelperText>{msg.login}</FormHelperText>
 								</FormControl>
 								
-								<FormControl fullWidth className={classes.formControl}  error={!!msg.password}>
+								<FormControl fullWidth className={classes.formControl} error={!!msg.password}>
 									<InputLabel htmlFor="password">Password</InputLabel>
-									<Input type="password" id="password" />
+									<Input 
+										type="password"
+										onChange={this.handleChange}
+										inputProps={{
+											name: 'password'
+										}}
+									/>
 									<FormHelperText>{msg.password}</FormHelperText>
 								</FormControl>
-								
+	
+								<FormControl fullWidth className={classes.formControl} error={!!msg.email}>
+									<InputLabel htmlFor="email">Email</InputLabel>
+									<Input 
+										type="email" 
+										value={data.email ? data.email : ''} 
+										onChange={this.handleChange} 
+										inputProps={{
+											name: 'email'
+										}}
+									/>
+									<FormHelperText>{msg.email}</FormHelperText>
+								</FormControl>
+																
 								<div className={classes.formControl + ' mb-3'}>
 									<AutocompleteSelectLibrary 
 										list={data.libraries ? data.libraries : []}
 										onChange={(libraries) => formLibraries = libraries} 
 									/>
 								</div>
-	
-								<FormControl fullWidth className={classes.formControl} error={!!msg.email}>
-									<InputLabel htmlFor="email">Email</InputLabel>
-									<Input type="email" id="email" value={data.email ? data.email : ''} onChange={this.handleChange} />
-									<FormHelperText>{msg.email}</FormHelperText>
+								
+								<FormControl className={classes.formControl}>
+									<InputLabel htmlFor="level">Level</InputLabel>
+									<Select
+										value={data.level ? data.level : 'isVisitor'}
+										onChange={this.handleChange}
+										inputProps={{
+											name: 'level'
+										}}
+									>
+										<MenuItem value='isVisitor'>Visitor</MenuItem>
+										<MenuItem value='isContributor'>Contributor</MenuItem>
+										<MenuItem value='isAdmin'>Administrator</MenuItem>
+									</Select>
 								</FormControl>
 								
 							</Grid>
 						</Grid>
-
-					</DialogContent>
-					<DialogActions>
-						<Button onClick={this.handleClose} color="primary">Cancel</Button>
-						<Button type="submit" color="primary">Save</Button>
-					</DialogActions>
-				</form>
+					</form>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={this.handleClose} color="primary">Cancel</Button>
+					<Button type="submit" color="primary" form="userForm">Save</Button>
+				</DialogActions>
 			</Dialog>
 		);
 	}
