@@ -18,6 +18,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Grid from '@material-ui/core/Grid';
 
 import AutocompleteSelectLibrary from '../components/AutocompleteSelectLibrary';
+import AutocompleteSelectGroup from '../components/AutocompleteSelectGroup';
 import api from "../utils/api.js";
 
 const styles = theme => ({
@@ -33,6 +34,7 @@ const styles = theme => ({
 
 //Listes des librairies de l'utilisateur telles qu'affichées dans le formulaire
 let formLibraries = []
+let formGroups = []
 
 class AdminUser extends React.Component {
 	
@@ -115,7 +117,7 @@ class AdminUser extends React.Component {
 		
 		console.log('submit !');
 		console.log(this.state);
-		console.log(formLibraries);
+		console.log(formLibraries, formGroups);
 		this.handleClose();
 		
 		event.preventDefault();
@@ -180,6 +182,13 @@ class AdminUser extends React.Component {
 									<AutocompleteSelectLibrary 
 										list={data.libraries ? data.libraries : []}
 										onChange={(libraries) => formLibraries = libraries} 
+									/>
+								</div>
+								
+								<div className={classes.formControl + ' mb-3'}>
+									<AutocompleteSelectGroup 
+										list={data.groups ? data.groups : []}
+										onChange={(groups) => formGroups = groups} 
 									/>
 								</div>
 								

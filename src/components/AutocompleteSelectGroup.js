@@ -20,11 +20,11 @@ function renderInput(inputProps) {
 	return (
 		<TextField
 			InputProps={{
-			inputRef: ref,
-			classes: {
-			root: classes.inputRoot,
-			},
-			...InputProps,
+				inputRef: ref,
+				classes: {
+				root: classes.inputRoot,
+				},
+				...InputProps,
 			}}
 			{...other}
 		/>
@@ -33,7 +33,8 @@ function renderInput(inputProps) {
 
 function renderSuggestion({ suggestion, index, itemProps, highlightedIndex, selectedItem }) {
 	const isHighlighted = highlightedIndex === index;
-	const isSelected = (selectedItem || '').indexOf(suggestion.id) > -1;
+	console.log(selectedItem);
+	const isSelected = (selectedItem || '').indexOf(suggestion._id) > -1;
 	
 	return (
 		<MenuItem
@@ -45,7 +46,7 @@ function renderSuggestion({ suggestion, index, itemProps, highlightedIndex, sele
 				fontWeight: isSelected ? 500 : 400,
 			}}
 		>
-			{suggestion.id}
+			{suggestion.name}
 		</MenuItem>
 	);
 }
@@ -54,8 +55,8 @@ renderSuggestion.propTypes = {
 	highlightedIndex: PropTypes.number,
 	index: PropTypes.number,
 	itemProps: PropTypes.object,
-	selectedItem: PropTypes.string,
-	suggestion: PropTypes.shape({ id: PropTypes.string }).isRequired,
+	selectedItem: PropTypes.object,
+	suggestion: PropTypes.shape({ name: PropTypes.string }).isRequired,
 };
 
 function getSuggestions(value) {
@@ -67,7 +68,7 @@ function getSuggestions(value) {
 	? []
 	: suggestions.filter(suggestion => {
 		const keep =
-			count < 4 && suggestion.id.slice(0, inputLength).toLowerCase() === inputValue;
+			count < 4 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
 		
 		if (keep) {
 			count += 1;
@@ -77,7 +78,7 @@ function getSuggestions(value) {
 	});
 }
 
-class AutocompleteSelectLibrary extends React.Component {
+class AutocompleteSelectGroup extends React.Component {
 	state = {
 		inputValue: '',
 		selectedItem: []
@@ -123,7 +124,7 @@ class AutocompleteSelectLibrary extends React.Component {
 		api.request(
 			{
 				method: 'get',
-				url: '/libraries',
+				url: '/groups',
 				data: {}
 			}, function(data, status) { //success
 				suggestions = data.data;
@@ -133,13 +134,20 @@ class AutocompleteSelectLibrary extends React.Component {
 	componentWillReceiveProps(nextProps) {
 		let { selectedItem } = this.state;
 		for (const item of nextProps.list) {
-			if (selectedItem.indexOf(item.id) === -1) {
-				selectedItem = [...selectedItem, item.id];
+			let found = false;
+			for (const sItem of selectedItem) {
+				if (sItem._id.indexOf(item._id) !== -1) {
+					found = true;
+				}
+			}
+			if (!found) {
+				selectedItem = [...selectedItem, item];
 			}
 		}
 		this.setState({
 			selectedItem,
 		});
+		console.log(selectedItem);
 	}
 		
 	componentDidUpdate() {
@@ -173,18 +181,18 @@ class AutocompleteSelectLibrary extends React.Component {
 								InputProps: getInputProps({
 									startAdornment: selectedItem.map(item => (
 										<Chip
-											key={item}
+											key={item._id}
 											tabIndex={-1}
-											label={item}
+											label={item.name}
 											className={classes.chip}
 											onDelete={this.handleDelete(item)}
 										/>
 										)),
 									onChange: this.handleInputChange,
 									onKeyDown: this.handleKeyDown,
-									placeholder: selectedItem.length === 0 ? 'Select multiple libraries' : '',
+									placeholder: selectedItem.length === 0 ? 'Select multiple groups' : '',
 								}),
-								label: 'Libraries',
+								label: 'Groups',
 							})}
 							{isOpen ? (
 								<Paper className={classes.paper} square>
@@ -192,7 +200,7 @@ class AutocompleteSelectLibrary extends React.Component {
 										renderSuggestion({
 											suggestion,
 											index,
-											itemProps: getItemProps({ item: suggestion.id }),
+											itemProps: getItemProps({ item: suggestion.name }),
 											highlightedIndex,
 											selectedItem: selectedItem2,
 										}),
@@ -207,7 +215,7 @@ class AutocompleteSelectLibrary extends React.Component {
 	}
 }
 
-AutocompleteSelectLibrary.propTypes = {
+AutocompleteSelectGroup.propTypes = {
 	classes: PropTypes.object.isRequired,
 };
 
@@ -235,4 +243,4 @@ const styles = theme => ({
 	}
 });
 
-export default withStyles(styles)(AutocompleteSelectLibrary);
+export default withStyles(styles)(AutocompleteSelectGroup);
