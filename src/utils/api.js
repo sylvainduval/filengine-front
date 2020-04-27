@@ -5,7 +5,7 @@ import session from "./session";
 
 import ReturnMessage from '../components/ReturnMessage';
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 
 
